@@ -1,0 +1,31 @@
+#:kivy 1.11.1
+
+<DisplayTasks>:
+	Label:
+		text: 'Tasks'
+		pos_hint: {'y': .45}
+	BoxLayout:
+		orientation: 'vertical'
+
+		AnchorLayout:
+			anchor_x: 'right'
+			anchor_y: 'top'
+			size_hint: 1, .1
+			padding: 0, 10, 10, 0
+
+			AddTaskLabel:
+				size: self.texture_size
+				size_hint: None, None
+				text: 'New Task'
+				on_press: root.manager.current = 'create_task'
+
+		BoxLayout:
+			id: tasks
+			orientation: 'vertical'
+
+<CreateTask>:
+	FloatLayout:
+		Label:
+			text: 'Create Task'
+			pos_hint: {'y': .45}
+
