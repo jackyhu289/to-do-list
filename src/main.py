@@ -14,7 +14,7 @@ from kivy.uix.behaviors import ButtonBehavior
 
 import sqlite3
 
-class AddTaskLabel(ButtonBehavior, Label):
+class BtnBehaviorLabel(ButtonBehavior, Label):
     pass
 
 class DisplayTasks(Screen):
@@ -47,8 +47,8 @@ class ToDoApp(App):
 
         # create the screen manager
         taskManager = ScreenManager()
-        taskManager.add_widget(DisplayTasks(name='tasks_display'))
         taskManager.add_widget(CreateTask(name='create_task'))
+        taskManager.add_widget(DisplayTasks(name='tasks_display'))
 
         return taskManager
 

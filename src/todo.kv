@@ -13,7 +13,7 @@
 			size_hint: 1, .1
 			padding: 0, 10, 10, 0
 
-			AddTaskLabel:
+			BtnBehaviorLabel:
 				size: self.texture_size
 				size_hint: None, None
 				text: 'New Task'
@@ -24,8 +24,64 @@
 			orientation: 'vertical'
 
 <CreateTask>:
-	FloatLayout:
-		Label:
-			text: 'Create Task'
-			pos_hint: {'y': .45}
+	Label:
+		text: 'Create Task'
+		pos_hint: {'y': .45}
+	BoxLayout:
+		orientation: 'vertical'
 
+		AnchorLayout:
+			anchor_x: 'left'
+			anchor_y: 'top'
+			padding: 10, 10, 0, 0
+			size_hint: 1, .05
+
+			BtnBehaviorLabel:
+				size: self.texture_size
+				size_hint: None, None
+				text: 'Cancel'
+				on_press: root.manager.current = 'tasks_display'
+		BoxLayout:
+			orientation: 'horizontal'
+			padding: 10, 0, 10, 0
+
+			BoxLayout:
+				orientation: 'vertical'
+
+				Label:
+					text: 'Title'
+					text_size: self.size
+					size_hint: 1, .5
+					halign: 'left'
+					pos: 10, 10
+				TextInput:
+					id: title
+					hint_text: 'Required'
+					multiline: False
+					size_hint: 1, .3
+				Label:
+					text: 'Body'
+				TextInput:
+					id: body
+					hint_text: 'Not Required'
+
+				BoxLayout:
+					orientation: 'horizontal'
+
+					GridLayout:
+						rows: 2
+						cols: 2
+
+						Button:
+							text: '+1 Hour'
+						Button:
+							text: '+1 Day'
+						Button:
+							text: '+1 Week'
+						Button:
+							text: '+1 Month'
+						
+					TextInput:
+						id: total
+				Button:
+					text: 'Done'
