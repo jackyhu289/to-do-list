@@ -44,44 +44,66 @@
 		BoxLayout:
 			orientation: 'horizontal'
 			padding: 10, 0, 10, 0
+			size_hint_y: .5
 
 			BoxLayout:
 				orientation: 'vertical'
+				spacing: 10
 
-				Label:
-					text: 'Title'
-					text_size: self.size
-					size_hint: 1, .5
-					halign: 'left'
-					pos: 10, 10
-				TextInput:
-					id: title
-					hint_text: 'Required'
-					multiline: False
-					size_hint: 1, .3
-				Label:
-					text: 'Body'
-				TextInput:
-					id: body
-					hint_text: 'Not Required'
+				BoxLayout:
+					orientation: 'vertical'
+					size_hint_y: .25
 
+					Label:
+						text: 'Title'
+						size: self.texture_size
+						size_hint: None, None
+					TextInput:
+						id: title
+						hint_text: 'Required'
+						multiline: False
+						size_hint: .6, .1
+				BoxLayout:
+					orientation: 'vertical'
+
+					Label:
+						text: 'Body'
+						size: self.texture_size
+						size_hint: None, None
+					TextInput:
+						id: body
+						hint_text: 'Not Required'
+						size_hint: .7, .5
 				BoxLayout:
 					orientation: 'horizontal'
 
 					GridLayout:
-						rows: 2
+						rows: 3
 						cols: 2
+						spacing: 3
 
+						Button:
+							text: '+5 minutes'
+						Button:
+							text: '+10 minutes'
 						Button:
 							text: '+1 Hour'
 						Button:
 							text: '+1 Day'
 						Button:
 							text: '+1 Week'
-						Button:
-							text: '+1 Month'
-						
-					TextInput:
-						id: total
-				Button:
-					text: 'Done'
+						Image:
+							source: 'img/restart.png'
+					BoxLayout:
+						orientation: 'vertical'
+
+						TextInput:
+							id: total
+							
+				AnchorLayout:
+					anchor_y: 'center'
+					size_hint: 1, .4
+			
+					Button:
+						text: 'Done'
+						size_hint: .5, .5

@@ -5,14 +5,15 @@ from kivy.app import App
 from kivy.uix.label import Label
 
 from kivy.uix.screenmanager import ScreenManager, Screen
-
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-
 from kivy.uix.behaviors import ButtonBehavior
 
 import sqlite3
+
+# debugging
+from kivy.core.window import Window
 
 class BtnBehaviorLabel(ButtonBehavior, Label):
     pass
@@ -28,6 +29,8 @@ class ListTasks():
 
 class ToDoApp(App):
     def build(self):
+        Window.size = (500, 600)
+
         # create the database if it doesn't exist
         conn = sqlite3.connect('tasks.db')
         cursor = conn.cursor()
