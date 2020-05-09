@@ -71,6 +71,10 @@ class DisplayTasks(Screen):
 
 class CreateTask(Screen):
     def addTask(self, title, body, dueTimestamp=None):
+        # validation
+        if len(title) == 0:
+            return
+
         # start a connection
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
