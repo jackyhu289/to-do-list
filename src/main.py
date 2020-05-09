@@ -12,6 +12,8 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
 from kivy.graphics.instructions import Canvas
 
+from kivy.properties import ObjectProperty
+
 import sqlite3
 
 # debugging
@@ -38,6 +40,8 @@ class TaskBG(Canvas):
     pass
 
 class DisplayTasks(Screen):
+    tasksLayout = ObjectProperty(None)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -63,6 +67,7 @@ class DisplayTasks(Screen):
                 dueDate = task[2]
 
             # dynamically display each task
+            self.tasksLayout.add_widget(AppLabel(text=title))
 
 class CreateTask(Screen):
     def addTask(self, title, body, dueTimestamp=None):

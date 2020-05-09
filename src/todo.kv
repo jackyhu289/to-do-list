@@ -14,6 +14,8 @@
 	color: 0, 0, 0, 1
 
 <DisplayTasks>:
+	tasksLayout: tasks
+
 	canvas.before:
 		Color:
 			rgba: 1, 1, 1, 1
@@ -37,7 +39,7 @@
 				size: self.texture_size
 				size_hint: None, None
 				text: 'New Task'
-				on_press: root.manager.current = 'create_task'
+				on_release: root.manager.current = 'create_task'
 
 		BoxLayout:
 			id: tasks
@@ -66,7 +68,7 @@
 				size: self.texture_size
 				size_hint: None, None
 				text: 'Cancel'
-				on_press: root.manager.current = 'tasks_display'
+				on_release: root.manager.current = 'tasks_display'
 		BoxLayout:
 			orientation: 'horizontal'
 			padding: 10, 0, 10, 0
@@ -138,4 +140,4 @@
 					Button:
 						text: 'Done'
 						size_hint: .5, .5
-						on_press: root.addTask(title.text, body.text, timeDue.text)
+						on_release: root.addTask(title.text, body.text, timeDue.text)
