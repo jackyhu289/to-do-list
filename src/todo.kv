@@ -1,8 +1,28 @@
 #:kivy 1.11.1
 
+<AppLabel>:
+	color: 0, 0, 0, 1
+	background_color: 0, 1, 0, 1
+
+<TaskBG>:
+	before: True
+	Line:
+		width: 2
+		rectangle: self.x, self.y, self.width, self.height
+
+<BtnBehaviorLabel@ButtonBehavior+Label>:
+	color: 0, 0, 0, 1
+
 <DisplayTasks>:
-	Label:
+	canvas.before:
+		Color:
+			rgba: 1, 1, 1, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
+	AppLabel:
 		text: 'Tasks'
+		color: 0, 0, 0, 1
 		pos_hint: {'y': .45}
 	BoxLayout:
 		orientation: 'vertical'
@@ -24,7 +44,13 @@
 			orientation: 'vertical'
 
 <CreateTask>:
-	Label:
+	canvas.before:
+		Color:
+			rgba: 1, 1, 1, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
+	AppLabel:
 		text: 'Create Task'
 		pos_hint: {'y': .45}
 	BoxLayout:
@@ -54,7 +80,7 @@
 					orientation: 'vertical'
 					size_hint_y: .25
 
-					Label:
+					AppLabel:
 						text: 'Title'
 						size: self.texture_size
 						size_hint: None, None
@@ -65,15 +91,16 @@
 						size_hint: .6, .1
 				BoxLayout:
 					orientation: 'vertical'
+					size_hint_y: .4
 
-					Label:
+					AppLabel:
 						text: 'Body'
 						size: self.texture_size
 						size_hint: None, None
 					TextInput:
 						id: body
 						hint_text: 'Not Required'
-						size_hint: .7, .5
+						size_hint: .7, .3
 				BoxLayout:
 					orientation: 'horizontal'
 
@@ -97,8 +124,12 @@
 					BoxLayout:
 						orientation: 'vertical'
 
+						AppLabel:
+							text: 'Days:Hours:Minutes'
 						TextInput:
-							id: total
+							id: timeDue
+							size_hint: .9, .5
+							readonly: True
 							
 				AnchorLayout:
 					anchor_y: 'center'
@@ -107,3 +138,4 @@
 					Button:
 						text: 'Done'
 						size_hint: .5, .5
+						on_press: root.addTask(title.text, body.text, timeDue.text)
