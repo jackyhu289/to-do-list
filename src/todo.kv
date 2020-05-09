@@ -1,17 +1,16 @@
 #:kivy 1.11.1
 
+<BtnBehaviorLabel@ButtonBehavior+Label>:
+	color: 0, 0, 0, 1
+
 <AppLabel>:
 	color: 0, 0, 0, 1
-	background_color: 0, 1, 0, 1
 
 <TaskBG>:
 	before: True
 	Line:
 		width: 2
 		rectangle: self.x, self.y, self.width, self.height
-
-<BtnBehaviorLabel@ButtonBehavior+Label>:
-	color: 0, 0, 0, 1
 
 <DisplayTasks>:
 	tasksLayout: tasks
@@ -20,11 +19,9 @@
 		Color:
 			rgba: 1, 1, 1, 1
 		Rectangle:
-			pos: self.pos
 			size: self.size
 	AppLabel:
 		text: 'Tasks'
-		color: 0, 0, 0, 1
 		pos_hint: {'y': .45}
 	BoxLayout:
 		orientation: 'vertical'
@@ -36,11 +33,10 @@
 			padding: 0, 10, 10, 0
 
 			BtnBehaviorLabel:
+				text: 'New Task'
 				size: self.texture_size
 				size_hint: None, None
-				text: 'New Task'
 				on_release: root.manager.current = 'create_task'
-
 		BoxLayout:
 			id: tasks
 			orientation: 'vertical'
@@ -50,7 +46,6 @@
 		Color:
 			rgba: 1, 1, 1, 1
 		Rectangle:
-			pos: self.pos
 			size: self.size
 	AppLabel:
 		text: 'Create Task'
@@ -90,7 +85,9 @@
 						id: title
 						hint_text: 'Required'
 						multiline: False
-						size_hint: .6, .1
+						size_hint_x: .6
+						size_hint_y: None
+						height: 30
 				BoxLayout:
 					orientation: 'vertical'
 					size_hint_y: .4
@@ -107,7 +104,7 @@
 					orientation: 'horizontal'
 
 					GridLayout:
-						rows: 3
+						rows: 4
 						cols: 2
 						spacing: 3
 
@@ -121,17 +118,27 @@
 							text: '+1 Day'
 						Button:
 							text: '+1 Week'
-						Image:
-							source: 'img/restart.png'
-					BoxLayout:
-						orientation: 'vertical'
+						Button:
+							text: 'Custom'
+						Button:
+							font_name: 'fonts/Arial-Unicode-MS_4302.ttf'
+							font_size: 26
+							text: '↺'
+					AnchorLayout:
+						anchor_x: 'center'
+						anchor_y: 'top'
 
-						AppLabel:
-							text: 'Days:Hours:Minutes'
-						TextInput:
-							id: timeDue
-							size_hint: .9, .5
-							readonly: True
+						BoxLayout:
+							orientation: 'vertical'
+							size_hint: .7, .5
+
+							AppLabel:
+								text: 'DD:HH:MM'
+								font_size: timeDue.height/2
+							TextInput:
+								id: timeDue
+								readonly: True
+								font_size: 40
 							
 				AnchorLayout:
 					anchor_y: 'center'
