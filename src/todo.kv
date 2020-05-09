@@ -42,6 +42,8 @@
 			orientation: 'vertical'
 
 <CreateTask>:
+	timestampDue: timestampDue
+
 	canvas.before:
 		Color:
 			rgba: 1, 1, 1, 1
@@ -85,7 +87,7 @@
 						id: title
 						hint_text: 'Required'
 						multiline: False
-						size_hint_x: .6
+						size_hint_x: .7
 						size_hint_y: None
 						height: 30
 				BoxLayout:
@@ -99,7 +101,7 @@
 					TextInput:
 						id: body
 						hint_text: 'Not Required'
-						size_hint: .7, .3
+						size_hint: .8, .3
 				BoxLayout:
 					orientation: 'horizontal'
 
@@ -110,36 +112,41 @@
 
 						Button:
 							text: '+5M'
+							on_press: root.addMins(5)
 						Button:
 							text: '+10M'
+							on_press: root.addMins(10)
 						Button:
 							text: '+1H'
+							on_press: root.addHours(1)
 						Button:
 							text: '+1D'
+							on_press: root.addDays(1)
 						Button:
 							text: '+7D'
+							on_press: root.addDays(7)
 						Button:
 							text: 'Custom'
 						Button:
 							font_name: 'fonts/Segoe_UI_Symbol.ttf'
 							font_size: 36
 							text: '↺'
+							on_press: root.clearDueTimestamp()
 					AnchorLayout:
 						anchor_x: 'center'
 						anchor_y: 'top'
 
 						BoxLayout:
 							orientation: 'vertical'
-							size_hint: .7, .5
+							size_hint: .8, .4
 
 							AppLabel:
 								text: 'DD:HH:MM'
-								font_size: timeDue.height/2
+								font_size: timestampDue.height/2
 							TextInput:
-								id: timeDue
+								id: timestampDue
+								font_size: 30
 								readonly: True
-								font_size: 40
-							
 				AnchorLayout:
 					anchor_y: 'center'
 					size_hint: 1, .4
@@ -147,4 +154,4 @@
 					Button:
 						text: 'Done'
 						size_hint: .5, .5
-						on_release: root.addTask(title.text, body.text, timeDue.text)
+						on_release: root.addTask(title.text, body.text)

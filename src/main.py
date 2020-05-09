@@ -15,6 +15,7 @@ from kivy.graphics.instructions import Canvas
 from kivy.properties import ObjectProperty
 
 import sqlite3
+from datetime import datetime
 
 # debugging
 from kivy.core.window import Window
@@ -70,7 +71,42 @@ class DisplayTasks(Screen):
             self.tasksLayout.add_widget(AppLabel(text=title))
 
 class CreateTask(Screen):
-    def addTask(self, title, body, dueTimestamp=None):
+    timestampDue = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.mins = 0
+        self.hrs = 0
+        self.days = 0
+
+        self.dispDueTimestamp()
+
+    def dispDueTimestamp(self):
+        timestamp = '%02i:%02i:%02i' % (self.days, self.hrs, self.mins)
+
+        self.timestampDue.text = timestamp
+
+    # adding the due time to the total
+    def addMins(self, minutes):
+        self.mins += minutes
+        self.dispDueTimestamp()
+
+    def addHours(self, hours):
+        self.hrs += hours
+        self.dispDueTimestamp()
+
+    def addDays(self, days):
+        self.days += days
+        self.dispDueTimestamp()
+
+    def clearDueTimestamp(self):
+        self.days = 0
+        self.hrs = 0
+        self.mins = 0
+        self.dispDueTimestamp()
+
+    def addTask(self, title, body):
         # validation
         if len(title) == 0:
             return
@@ -79,11 +115,22 @@ class CreateTask(Screen):
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
 
-        query = f'''
-            INSERT INTO {TABLE_NAME}(title, body)
-            VALUES(?, ?);
-        '''
-        cursor.execute(query, (title, body))
+        if self.days != 0 or self.hrs != 0 or self.mins != 0:
+            # fetch the due date
+            today = datetime.now()
+            dueDate = today.replace(day=today.day + self.days, hour=today.hour + self.hrs, minute=today.minute + self.mins)
+
+            query = f'''
+                INSERT INTO {TABLE_NAME}(title, body, datetime_due)
+                VALUES(?, ?, ?);
+            '''
+            cursor.execute(query, (title, body, dueDate))
+        else:
+            query = f'''
+                INSERT INTO {TABLE_NAME}(title, body)
+                VALUES(?, ?);
+            '''
+            cursor.execute(query, (title, body))
 
         conn.commit()
         conn.close()
@@ -100,8 +147,8 @@ class ToDoApp(App):
 
         # create the screen manager
         taskManager = ScreenManager()
-        taskManager.add_widget(DisplayTasks(name='tasks_display'))
         taskManager.add_widget(CreateTask(name='create_task'))
+        taskManager.add_widget(DisplayTasks(name='tasks_display'))
 
         conn.commit()
         conn.close()
