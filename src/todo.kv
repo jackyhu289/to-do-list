@@ -6,11 +6,14 @@
 <AppLabel>:
 	color: 0, 0, 0, 1
 
-<TaskBG>:
-	before: True
-	Line:
-		width: 2
-		rectangle: self.x, self.y, self.width, self.height
+<TaskDisplay>:
+	orientation: 'vertical'
+
+	canvas.before:
+		Color:
+			rgb: 1, 0, 0
+		Line:
+			rectangle: self.pos[0], self.pos[1], self.size[0], self.size[1]
 
 <DisplayTasks>:
 	tasksLayout: tasks
@@ -24,6 +27,12 @@
 		text: 'Tasks'
 		pos_hint: {'y': .45}
 	BoxLayout:
+		canvas:
+			Line:
+				rectangle: 0, 0, 200, 200
+			Color:
+				rgb: 1, 0, 0
+
 		orientation: 'vertical'
 
 		AnchorLayout:
@@ -37,9 +46,15 @@
 				size: self.texture_size
 				size_hint: None, None
 				on_release: root.manager.current = 'create_task'
-		BoxLayout:
-			id: tasks
-			orientation: 'vertical'
+		ScrollView:
+			do_scroll_y: True
+			do_scroll_x: False
+
+			BoxLayout:
+				id: tasks
+				orientation: 'vertical'
+				size_hint_y: None
+				#height: root.height
 
 <CreateTask>:
 	timestampDue: timestampDue

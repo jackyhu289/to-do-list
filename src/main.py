@@ -10,8 +10,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
-from kivy.graphics.instructions import Canvas
 
+from kivy.graphics.instructions import Canvas
+from kivy.graphics import Rectangle
+from kivy.graphics import Color
+from kivy.graphics import Line
 from kivy.properties import ObjectProperty
 
 import sqlite3
@@ -29,7 +32,7 @@ def createTaskTable(cursor):
             id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
             title VARCHAR(100) NOT NULL,
             body VARCHAR(1000) NOT NULL,
-            datetime_due VARCHAR(10)
+            datetime_due VARCHAR(100)
         );
     '''
     cursor.execute(query)
@@ -37,7 +40,7 @@ def createTaskTable(cursor):
 class AppLabel(Label):
     pass
 
-class TaskBG(Canvas):
+class TaskDisplay(BoxLayout, Button):
     pass
 
 class DisplayTasks(Screen):
@@ -51,24 +54,43 @@ class DisplayTasks(Screen):
         cursor = conn.cursor()
 
         query = f'''
-            SELECT title, body FROM {TABLE_NAME}
+            SELECT title, body, datetime_due FROM {TABLE_NAME}
         '''
         getTasks = cursor.execute(query)
         tasks = getTasks.fetchall()
 
         conn.close()
 
+        # set the height according to the number of tasks
+        self.tasksLayout.height = len(tasks)*100
+
         for task in tasks:
+            taskDisplay = TaskDisplay()
+
             # retrieve the titles
             title = task[0]
             dueDate = None
+
+            # display the tasks
+            taskDisplay = TaskDisplay()
+
+            # set the title label
+            titleLabel = AppLabel(
+                text=title,
+                pos_hint={'right': .6, 'y': .3}
+            )
+            taskDisplay.add_widget(titleLabel)
+            print(task)
             
             # retrieve the due date if it exists
             if len(task) == 3:
                 dueDate = task[2]
+                dueDateLabel = AppLabel(
+                    text=dueDate
+                )
+                taskDisplay.add_widget(dueDateLabel)
 
-            # dynamically display each task
-            self.tasksLayout.add_widget(AppLabel(text=title))
+            self.tasksLayout.add_widget(taskDisplay)
 
 class CreateTask(Screen):
     timestampDue = ObjectProperty(None)
@@ -147,8 +169,8 @@ class ToDoApp(App):
 
         # create the screen manager
         taskManager = ScreenManager()
-        taskManager.add_widget(CreateTask(name='create_task'))
         taskManager.add_widget(DisplayTasks(name='tasks_display'))
+        taskManager.add_widget(CreateTask(name='create_task'))
 
         conn.commit()
         conn.close()
