@@ -20,6 +20,7 @@ from kivy.properties import ObjectProperty
 import sqlite3
 import math
 from datetime import datetime
+from datetime import timedelta
 
 # debugging
 from kivy.core.window import Window
@@ -156,8 +157,11 @@ class CreateTask(Screen):
 
         if self.days != 0 or self.hrs != 0 or self.mins != 0:
             # fetch the due date
-            today = datetime.now()
-            dueDate = today.replace(day=today.day + self.days, hour=today.hour + self.hrs, minute=today.minute + self.mins)
+            dueDate = datetime.now() + timedelta(
+                days=self.days,
+                hours=self.hrs,
+                minutes=self.mins
+            )
 
             query = f'''
                 INSERT INTO {TABLE_NAME}(title, body, datetime_due)
