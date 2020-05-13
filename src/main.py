@@ -117,34 +117,38 @@ class CreateTask(Screen):
 
         self.dispDueTimestamp()
 
-    def dispDueTimestamp(self):
+    def dispDueTimestamp(self) -> None:
         timestamp = '%02i:%02i:%02i' % (self.days, self.hrs, self.mins)
 
         self.timestampDue.text = timestamp
 
     # adding the due time to the total
-    def addMins(self, minutes):
+    def addMins(self, minutes: int) -> None:
         self.mins += minutes
         self.dispDueTimestamp()
 
-    def addHours(self, hours):
+    def addHours(self, hours: int) - None:
         self.hrs += hours
         self.dispDueTimestamp()
 
-    def addDays(self, days):
+    def addDays(self, days: int) -> None:
         self.days += days
         self.dispDueTimestamp()
 
-    def clearDueTimestamp(self):
+    def clearDueTimestamp(self) -> None:
         self.days = 0
         self.hrs = 0
         self.mins = 0
         self.dispDueTimestamp()
 
-    def addTask(self, title, body):
+    def addTask(self, title: str, body: str) -> None:
         # validation
         if len(title) == 0:
             return
+
+        # remove unnecessary leading and trailing whitespaces
+        title = title.strip()
+        body = title.strip()
 
         # start a connection
         conn = sqlite3.connect(DATABASE_NAME)
