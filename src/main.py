@@ -18,6 +18,7 @@ from kivy.graphics import Line
 from kivy.properties import ObjectProperty
 
 import sqlite3
+import math
 from datetime import datetime
 
 # debugging
@@ -50,6 +51,40 @@ class DisplayTasks(Screen):
         super().__init__(**kwargs)
 
         # load each of the users tasks
+        tasks = self.fetchTasks()
+
+        # set the height according to the number of tasks
+        self.tasksLayout.height = len(tasks)*100
+
+        for task in tasks:
+            taskDisplay = TaskDisplay()
+
+            # retrieve the title
+            title = task[0]
+            dueDate = None
+
+            # set the title label
+            titleLabel = AppLabel(
+                text=title,
+                pos_hint={'right': .6, 'y': .3}
+            )
+            taskDisplay.add_widget(titleLabel)
+            
+            # retrieve the due date if it exists
+            if len(task) == 3:
+                dueDate = datetime.fromisoformat(task[2])
+                
+                # get the remaining time from today
+                remainingTime = self.parseDueDate(dueDate)
+
+                dueDateLabel = AppLabel(
+                    text=remainingTime
+                )
+                taskDisplay.add_widget(dueDateLabel)
+
+            self.tasksLayout.add_widget(taskDisplay)
+
+    def fetchTasks(self) -> tuple:
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
 
@@ -61,36 +96,25 @@ class DisplayTasks(Screen):
 
         conn.close()
 
-        # set the height according to the number of tasks
-        self.tasksLayout.height = len(tasks)*100
+        return tasks
 
-        for task in tasks:
-            taskDisplay = TaskDisplay()
+    # parses the date, returning it in the form of '7 days/minutes/... left
+    def parseDueDate(self, dueDate) -> str:
+        secondsLeft = (dueDate - datetime.now()).total_seconds()
 
-            # retrieve the titles
-            title = task[0]
-            dueDate = None
+        # time durations in seconds
+        day = 86400
+        hour = 3600
+        minute = 60
 
-            # display the tasks
-            taskDisplay = TaskDisplay()
-
-            # set the title label
-            titleLabel = AppLabel(
-                text=title,
-                pos_hint={'right': .6, 'y': .3}
-            )
-            taskDisplay.add_widget(titleLabel)
-            print(task)
-            
-            # retrieve the due date if it exists
-            if len(task) == 3:
-                dueDate = task[2]
-                dueDateLabel = AppLabel(
-                    text=dueDate
-                )
-                taskDisplay.add_widget(dueDateLabel)
-
-            self.tasksLayout.add_widget(taskDisplay)
+        # return the time duration count depending on the highest time duration
+        if secondsLeft >= day:
+            return '%s days left' % math.floor(secondsLeft / day)
+        if secondsLeft >= hour:
+            return '%s hours left' % math.floor(secondsLeft / hour) 
+        if secondsLeft >= minute:
+            return '%s minutes left' % math.floor(secondsLeft / minute)
+        return '%s seconds left' % math.floor(secondsLeft)
 
 class CreateTask(Screen):
     timestampDue = ObjectProperty(None)
