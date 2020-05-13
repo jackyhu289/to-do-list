@@ -127,7 +127,7 @@ class CreateTask(Screen):
         self.mins += minutes
         self.dispDueTimestamp()
 
-    def addHours(self, hours: int) - None:
+    def addHours(self, hours: int) -> None:
         self.hrs += hours
         self.dispDueTimestamp()
 
