@@ -27,17 +27,6 @@ from kivy.core.window import Window
 DATABASE_NAME = 'tasks.db'
 TABLE_NAME = 'tasks'
 
-def createTaskTable(cursor):
-    query = f'''
-        CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
-            id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
-            title VARCHAR(100) NOT NULL,
-            body VARCHAR(1000) NOT NULL,
-            datetime_due VARCHAR(100)
-        );
-    '''
-    cursor.execute(query)
-
 class AppLabel(Label):
     pass
 
@@ -189,15 +178,23 @@ class ToDoApp(App):
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
         
-        createTaskTable(cursor)
+        query = f'''
+            CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
+                id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT,
+                title VARCHAR(100) NOT NULL,
+                body VARCHAR(1000) NOT NULL,
+                datetime_due VARCHAR(100)
+            );
+        '''
+        cursor.execute(query)
+
+        conn.commit()
+        conn.close()
 
         # create the screen manager
         taskManager = ScreenManager()
         taskManager.add_widget(DisplayTasks(name='tasks_display'))
         taskManager.add_widget(CreateTask(name='create_task'))
-
-        conn.commit()
-        conn.close()
 
         return taskManager
 
