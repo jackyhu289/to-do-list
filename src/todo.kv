@@ -7,7 +7,8 @@
 	color: 0, 0, 0, 1
 
 <TaskDisplay>:
-	orientation: 'vertical'
+	rows: 2
+	cols: 2
 
 	canvas.before:
 		Color:
@@ -15,7 +16,7 @@
 		Line:
 			rectangle: self.pos[0], self.pos[1], self.size[0], self.size[1]
 
-<DisplayTasks>:
+<ManageTasks>:
 	tasksLayout: tasks
 
 	canvas.before:
@@ -80,7 +81,7 @@
 				size: self.texture_size
 				size_hint: None, None
 				text: 'Cancel'
-				on_release: root.manager.current = 'tasks_display'
+				on_release: root.manager.current = 'manage_tasks'
 		BoxLayout:
 			orientation: 'horizontal'
 			padding: 10, 0, 10, 0
@@ -158,7 +159,7 @@
 							AppLabel:
 								text: 'DD:HH:MM'
 								font_size: timestampDue.height/2
-							TextInput:
+							AppLabel:
 								id: timestampDue
 								font_size: 30
 								readonly: True
