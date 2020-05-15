@@ -49,6 +49,9 @@ class ManageTasks(Screen):
         self.displayTasks()
 
     def displayTasks(self) -> None:
+        # clear each of the already displayed tasks to prevent duplicates
+        self.tasksLayout.clear_widgets()
+
         # load each of the users tasks
         tasks = self.fetchTasks()
 
@@ -80,7 +83,8 @@ class ManageTasks(Screen):
         deleteTaskIcon = BtnBehaviorLabel(
             text='×',
             font_size=36,
-            size_hint_x=.2
+            size_hint_x=.2,
+            color=(1, 0, 0, 1)
         )
         deleteTaskIcon.on_release = lambda: self.deleteTask(taskId)
 
@@ -183,11 +187,12 @@ class CreateTask(Screen):
 
         # remove unnecessary leading and trailing whitespaces
         title = title.strip()
-        body = title.strip()
+        body = body.strip()
 
         # start a connection
         conn = sqlite3.connect(DATABASE_NAME)
         cursor = conn.cursor()
+        dueDatetime = None
 
         if self.days != 0 or self.hrs != 0 or self.mins != 0:
             # fetch the due date
@@ -210,6 +215,12 @@ class CreateTask(Screen):
 
         conn.commit()
         conn.close()
+
+        self.manager.current = 'manage_tasks'
+
+        # update the tasks displayed
+        manageTasks = ManageTasks()
+        manageTasks.displayTasks()
 
 class ToDoApp(App):
     def build(self):
