@@ -7,6 +7,7 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
@@ -28,51 +29,70 @@ from kivy.core.window import Window
 DATABASE_NAME = 'tasks.db'
 TABLE_NAME = 'tasks'
 
+class BtnBehaviorLabel(ButtonBehavior, Label):
+    pass
+
 class AppLabel(Label):
     pass
 
-class TaskDisplay(BoxLayout, Button):
-    pass
+class TaskDisplay(ButtonBehavior, GridLayout):
+    def on_release(self):
+        print(self)
 
-class DisplayTasks(Screen):
+class ManageTasks(Screen):
     tasksLayout = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
+        self.displayTasks()
 
+    def displayTasks(self) -> None:
         # load each of the users tasks
         tasks = self.fetchTasks()
 
-        # set the height according to the number of tasks
+        # set the window height according to the number of tasks
         self.tasksLayout.height = len(tasks)*100
 
         for task in tasks:
-            taskDisplay = TaskDisplay()
-
-            # retrieve the title
             title = task[0]
+            body = task[1]
             dueDate = None
 
-            # set the title label
-            titleLabel = AppLabel(
-                text=title,
-                pos_hint={'right': .6, 'y': .3}
-            )
-            taskDisplay.add_widget(titleLabel)
-            
-            # retrieve the due date if it exists
-            if len(task) == 3:
+            # retrieve the due date if it exists (not NULL)
+            if task[2] != None:
                 dueDate = datetime.fromisoformat(task[2])
-                
-                # get the remaining time from today
-                remainingTime = self.parseDueDate(dueDate)
 
-                dueDateLabel = AppLabel(
-                    text=remainingTime
-                )
-                taskDisplay.add_widget(dueDateLabel)
+            self.displayTask(title, body, dueDate)
 
-            self.tasksLayout.add_widget(taskDisplay)
+    def displayTask(self, title: str, body: str, dueDate: datetime=None) -> None:
+        taskDisplay = TaskDisplay()
+
+        # set the title label
+        titleLabel = AppLabel(
+            text=title,
+            pos_hint={'right': .6, 'y': .3}
+        )
+        taskDisplay.add_widget(titleLabel)
+
+        deleteTaskIcon = BtnBehaviorLabel(
+            text='×',
+            font_size=36
+        )
+
+        taskDisplay.add_widget(deleteTaskIcon)
+
+        # set the due date if there is an assigned due date
+        if dueDate != None:
+            # get the remaining time from today
+            remainingTime = self.parseDueDate(dueDate)
+
+            dueDateLabel = AppLabel(
+                text=remainingTime
+            )
+            taskDisplay.add_widget(dueDateLabel)
+
+        self.tasksLayout.add_widget(taskDisplay)
 
     def fetchTasks(self) -> tuple:
         conn = sqlite3.connect(DATABASE_NAME)
@@ -106,16 +126,16 @@ class DisplayTasks(Screen):
             return '%s minutes left' % math.floor(secondsLeft / minute)
         return '%s seconds left' % math.floor(secondsLeft)
 
+    def deleteTask(self) -> None:
+        print('Delete')
+
 class CreateTask(Screen):
     timestampDue = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.mins = 0
-        self.hrs = 0
-        self.days = 0
-
+        self.mins = self.hrs = self.days = 0
         self.dispDueTimestamp()
 
     def dispDueTimestamp(self) -> None:
@@ -137,9 +157,7 @@ class CreateTask(Screen):
         self.dispDueTimestamp()
 
     def clearDueTimestamp(self) -> None:
-        self.days = 0
-        self.hrs = 0
-        self.mins = 0
+        self.days = self.hrs = self.mins = 0
         self.dispDueTimestamp()
 
     def addTask(self, title: str, body: str) -> None:
@@ -157,17 +175,16 @@ class CreateTask(Screen):
 
         if self.days != 0 or self.hrs != 0 or self.mins != 0:
             # fetch the due date
-            dueDate = datetime.now() + timedelta(
+            dueDatetime = datetime.now() + timedelta(
                 days=self.days,
                 hours=self.hrs,
                 minutes=self.mins
             )
-
             query = f'''
                 INSERT INTO {TABLE_NAME}(title, body, datetime_due)
                 VALUES(?, ?, ?);
             '''
-            cursor.execute(query, (title, body, dueDate))
+            cursor.execute(query, (title, body, dueDatetime))
         else:
             query = f'''
                 INSERT INTO {TABLE_NAME}(title, body)
@@ -201,7 +218,7 @@ class ToDoApp(App):
 
         # create the screen manager
         taskManager = ScreenManager()
-        taskManager.add_widget(DisplayTasks(name='tasks_display'))
+        taskManager.add_widget(ManageTasks(name='manage_tasks'))
         taskManager.add_widget(CreateTask(name='create_task'))
 
         return taskManager
