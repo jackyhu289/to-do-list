@@ -35,7 +35,8 @@ class BtnBehaviorLabel(ButtonBehavior, Label):
 class AppLabel(Label):
     pass
 
-class TaskDisplay(ButtonBehavior, GridLayout):
+class TaskDisplay(ButtonBehavior, BoxLayout):
+    # edit task options on click
     def on_release(self):
         print(self)
 
@@ -55,32 +56,36 @@ class ManageTasks(Screen):
         self.tasksLayout.height = len(tasks)*100
 
         for task in tasks:
-            title = task[0]
-            body = task[1]
-            dueDate = None
+            taskId = task[0]
+            title = task[1]
+            body = task[2]
 
             # retrieve the due date if it exists (not NULL)
-            if task[2] != None:
-                dueDate = datetime.fromisoformat(task[2])
+            if task[3] != None:
+                dueDate = datetime.fromisoformat(task[3])
+                
+                self.displayTask(taskId, title, body, dueDate)
+            else:
+                self.displayTask(taskId, title, body)
 
-            self.displayTask(title, body, dueDate)
-
-    def displayTask(self, title: str, body: str, dueDate: datetime=None) -> None:
+    def displayTask(self, taskId: int, title: str, body: str, dueDate: datetime=None) -> None:
         taskDisplay = TaskDisplay()
+        dispTaskAndDelOpt = BoxLayout(orientation='horizontal')
 
-        # set the title label
         titleLabel = AppLabel(
-            text=title,
-            pos_hint={'right': .6, 'y': .3}
+            text=title
         )
-        taskDisplay.add_widget(titleLabel)
+        dispTaskAndDelOpt.add_widget(titleLabel)
 
         deleteTaskIcon = BtnBehaviorLabel(
             text='×',
-            font_size=36
+            font_size=36,
+            size_hint_x=.2
         )
+        deleteTaskIcon.on_release = lambda: self.deleteTask(taskId)
 
-        taskDisplay.add_widget(deleteTaskIcon)
+        dispTaskAndDelOpt.add_widget(deleteTaskIcon)
+        taskDisplay.add_widget(dispTaskAndDelOpt)
 
         # set the due date if there is an assigned due date
         if dueDate != None:
@@ -99,7 +104,7 @@ class ManageTasks(Screen):
         cursor = conn.cursor()
 
         query = f'''
-            SELECT title, body, datetime_due FROM {TABLE_NAME}
+            SELECT id, title, body, datetime_due FROM {TABLE_NAME}
         '''
         getTasks = cursor.execute(query)
         tasks = getTasks.fetchall()
@@ -126,8 +131,19 @@ class ManageTasks(Screen):
             return '%s minutes left' % math.floor(secondsLeft / minute)
         return '%s seconds left' % math.floor(secondsLeft)
 
-    def deleteTask(self) -> None:
-        print('Delete')
+    def deleteTask(self, taskId: int) -> None:
+        # remove the task from the database
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+
+        query = f'''
+            DELETE FROM {TABLE_NAME}
+            WHERE id = {taskId}
+        '''
+        cursor.execute(query)
+
+        conn.commit()
+        conn.close()
 
 class CreateTask(Screen):
     timestampDue = ObjectProperty(None)
