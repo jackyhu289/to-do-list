@@ -42,6 +42,8 @@ class TaskDisplay(ButtonBehavior, BoxLayout):
         print(self)
 
 class ManageTasks(ScreenManager):
+    tasksDisplay = ObjectProperty(None)
+    createTask = ObjectProperty(None)
     tasksList = ObjectProperty(None)
     datetimeDueLabel = ObjectProperty(None)
 
@@ -139,11 +141,14 @@ class ManageTasks(ScreenManager):
     # Create task functionality
     # Manage due date
     def dispDueDate(self):
-        daysLeft = self.timeLeft['days']
-        hoursLeft = self.timeLeft['hours']
-        minutesLeft = self.timeLeft['minutes']
+        if self.timeLeft == None:
+            self.datetimeDueLabel.text = '00:00:00'
+        else:
+            daysLeft = self.timeLeft['days']
+            hoursLeft = self.timeLeft['hours']
+            minutesLeft = self.timeLeft['minutes']
 
-        self.datetimeDueLabel.text = '%02i:%02i:%02i' % (daysLeft, hoursLeft, minutesLeft)
+            self.datetimeDueLabel.text = '%02i:%02i:%02i' % (daysLeft, hoursLeft, minutesLeft)
 
     def increaseDueDatetime(self, days: int=None, hours: int=None, minutes: int=None) -> None:
         timeLeft = {
@@ -173,14 +178,6 @@ class ManageTasks(ScreenManager):
         self.timeLeft = timeLeft
         self.dispDueDate()
 
-    def resetDueDatetime(self) -> None:
-        self.timeLeft = {
-            'days': 0,
-            'hours': 0,
-            'minutes': 0
-        }
-        self.dispDueDate()
-
     def addTask(self, title: str, body: str) -> None:
         # verify the title length is greater than 0
         if len(title) == 0:
@@ -195,7 +192,7 @@ class ManageTasks(ScreenManager):
         cursor = conn.cursor()
 
         # insert due date if it exists
-        if self.timeLeft['days'] != 0 or self.timeLeft['hours'] != 0 or self.timeLeft['minutes'] != 0:
+        if self.timeLeft:
             dueDatetime = datetime.now() + timedelta(
                 days=self.timeLeft['days'],
                 hours=self.timeLeft['hours'],

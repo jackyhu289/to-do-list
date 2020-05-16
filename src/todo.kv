@@ -16,12 +16,14 @@
 			rectangle: self.pos[0], self.pos[1], self.size[0], self.size[1]
 
 <ManageTasks>:
+	tasksDisplay: tasksDisplay
+	createTask: createTask
 	tasksList: tasks
 	datetimeDueLabel: datetimeDue
 
 	# Tasks are displayed in this screen
 	Screen:
-		id: displayTasks
+		id: tasksDisplay
 		name: 'manage_tasks'
 
 		canvas.before:
@@ -51,7 +53,7 @@
 					text: 'New Task'
 					size: self.texture_size
 					size_hint: None, None
-					on_release: displayTasks.manager.current = 'create_task'
+					on_release: tasksDisplay.manager.current = 'create_task'
 			ScrollView:
 				do_scroll_y: True
 				do_scroll_x: False
@@ -154,7 +156,9 @@
 								font_name: 'fonts/Segoe_UI_Symbol.ttf'
 								font_size: 36
 								text: '↺'
-								on_press: root.resetDueDatetime()
+								on_press:
+									root.timeLeft = None
+									root.dispDueDate()
 						AnchorLayout:
 							anchor_x: 'center'
 							anchor_y: 'top'
@@ -178,4 +182,7 @@
 						Button:
 							text: 'Done'
 							size_hint: .5, .5
-							on_release: root.addTask(title.text, body.text)
+							on_release:
+								root.addTask(title.text, body.text)
+								createTask.manager.transition.direction = 'right'
+								createTask.manager.current = 'manage_tasks'
