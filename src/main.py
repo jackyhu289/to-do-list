@@ -25,6 +25,7 @@ from datetime import timedelta
 
 # debugging
 from kivy.core.window import Window
+import pdb
 
 DATABASE_NAME = 'tasks.db'
 TABLE_NAME = 'tasks'
@@ -40,23 +41,23 @@ class TaskDisplay(ButtonBehavior, BoxLayout):
     def on_release(self):
         print(self)
 
-class ManageTasks(Screen):
-    tasksLayout = ObjectProperty(None)
+class ManageTasks(ScreenManager):
+    tasksList = ObjectProperty(None)
+    datetimeDueLabel = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.timeLeft = None
         
         self.displayTasks()
 
+    # Display task functionality
     def displayTasks(self) -> None:
-        # clear each of the already displayed tasks to prevent duplicates
-        self.tasksLayout.clear_widgets()
-
         # load each of the users tasks
         tasks = self.fetchTasks()
 
         # set the window height according to the number of tasks
-        self.tasksLayout.height = len(tasks)*100
+        self.tasksList.height = len(tasks)*100
 
         for task in tasks:
             taskId = task[0]
@@ -101,7 +102,7 @@ class ManageTasks(Screen):
             )
             taskDisplay.add_widget(dueDateLabel)
 
-        self.tasksLayout.add_widget(taskDisplay)
+        self.tasksList.add_widget(taskDisplay)
 
     def fetchTasks(self) -> tuple:
         conn = sqlite3.connect(DATABASE_NAME)
@@ -135,6 +136,88 @@ class ManageTasks(Screen):
             return '%s minutes left' % math.floor(secondsLeft / minute)
         return '%s seconds left' % math.floor(secondsLeft)
 
+    # Create task functionality
+    # Manage due date
+    def dispDueDate(self):
+        daysLeft = self.timeLeft['days']
+        hoursLeft = self.timeLeft['hours']
+        minutesLeft = self.timeLeft['minutes']
+
+        self.datetimeDueLabel.text = '%02i:%02i:%02i' % (daysLeft, hoursLeft, minutesLeft)
+
+    def increaseDueDatetime(self, days: int=None, hours: int=None, minutes: int=None) -> None:
+        timeLeft = {
+            'days': 0,
+            'hours': 0,
+            'minutes': 0
+        }
+
+        if self.timeLeft != None:
+            timeLeft = self.timeLeft
+
+        if days:
+            timeLeft['days'] += days
+        if hours:
+            timeLeft['hours'] += hours
+        if minutes:
+            timeLeft['minutes'] += minutes
+
+        # convert the time durations to the appropriate times. For example, 60 minutes = +1 hour
+        if timeLeft['minutes'] >= 60:
+            timeLeft['hours'] += timeLeft['minutes']//60
+            timeLeft['minutes'] = timeLeft['minutes'] % 60
+        if timeLeft['hours'] >= 24:
+            timeLeft['days'] += timeLeft['hours']//24
+            timeLeft['hours'] = timeLeft['hours'] % 24
+
+        self.timeLeft = timeLeft
+        self.dispDueDate()
+
+    def resetDueDatetime(self) -> None:
+        self.timeLeft = {
+            'days': 0,
+            'hours': 0,
+            'minutes': 0
+        }
+        self.dispDueDate()
+
+    def addTask(self, title: str, body: str) -> None:
+        # verify the title length is greater than 0
+        if len(title) == 0:
+            return
+
+        # remove unnecessary trailing and preceding whitespace
+        title = title.strip()
+        body = body.strip()
+
+        # store the data into sql database
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+
+        # insert due date if it exists
+        if self.timeLeft['days'] != 0 or self.timeLeft['hours'] != 0 or self.timeLeft['minutes'] != 0:
+            dueDatetime = datetime.now() + timedelta(
+                days=self.timeLeft['days'],
+                hours=self.timeLeft['hours'],
+                minutes=self.timeLeft['minutes']
+            )
+
+            query = f'''
+                INSERT INTO {TABLE_NAME}(title, body, datetime_due)
+                VALUES(?, ?, ?)
+            '''
+            cursor.execute(query, (title, body, dueDatetime))
+        else:
+            query = f'''
+                INSERT INTO {TABLE_NAME}(title, body)
+                VALUES(?, ?)
+            '''
+            cursor.execute(query, (title, body))
+
+        conn.commit()
+        conn.close()
+
+    # Delete task functionality
     def deleteTask(self, taskId: int) -> None:
         # remove the task from the database
         conn = sqlite3.connect(DATABASE_NAME)
@@ -148,79 +231,6 @@ class ManageTasks(Screen):
 
         conn.commit()
         conn.close()
-
-class CreateTask(Screen):
-    timestampDue = ObjectProperty(None)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.mins = self.hrs = self.days = 0
-        self.dispDueTimestamp()
-
-    def dispDueTimestamp(self) -> None:
-        timestamp = '%02i:%02i:%02i' % (self.days, self.hrs, self.mins)
-
-        self.timestampDue.text = timestamp
-
-    # adding the due time to the total
-    def addMins(self, minutes: int) -> None:
-        self.mins += minutes
-        self.dispDueTimestamp()
-
-    def addHours(self, hours: int) -> None:
-        self.hrs += hours
-        self.dispDueTimestamp()
-
-    def addDays(self, days: int) -> None:
-        self.days += days
-        self.dispDueTimestamp()
-
-    def clearDueTimestamp(self) -> None:
-        self.days = self.hrs = self.mins = 0
-        self.dispDueTimestamp()
-
-    def addTask(self, title: str, body: str) -> None:
-        # validation
-        if len(title) == 0:
-            return
-
-        # remove unnecessary leading and trailing whitespaces
-        title = title.strip()
-        body = body.strip()
-
-        # start a connection
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        dueDatetime = None
-
-        if self.days != 0 or self.hrs != 0 or self.mins != 0:
-            # fetch the due date
-            dueDatetime = datetime.now() + timedelta(
-                days=self.days,
-                hours=self.hrs,
-                minutes=self.mins
-            )
-            query = f'''
-                INSERT INTO {TABLE_NAME}(title, body, datetime_due)
-                VALUES(?, ?, ?);
-            '''
-            cursor.execute(query, (title, body, dueDatetime))
-        else:
-            query = f'''
-                INSERT INTO {TABLE_NAME}(title, body)
-                VALUES(?, ?);
-            '''
-            cursor.execute(query, (title, body))
-
-        conn.commit()
-        conn.close()
-
-        self.manager.current = 'manage_tasks'
-
-        # update the tasks displayed
-        manageTasks = ManageTasks()
-        manageTasks.displayTasks()
 
 class ToDoApp(App):
     def build(self):
@@ -243,12 +253,7 @@ class ToDoApp(App):
         conn.commit()
         conn.close()
 
-        # create the screen manager
-        taskManager = ScreenManager()
-        taskManager.add_widget(ManageTasks(name='manage_tasks'))
-        taskManager.add_widget(CreateTask(name='create_task'))
-
-        return taskManager
+        return ManageTasks()
 
 if __name__ == '__main__':
     ToDoApp().run()

@@ -7,8 +7,7 @@
 	color: 0, 0, 0, 1
 
 <TaskDisplay>:
-	rows: 2
-	cols: 2
+	orientation: 'vertical'
 
 	canvas.before:
 		Color:
@@ -17,157 +16,166 @@
 			rectangle: self.pos[0], self.pos[1], self.size[0], self.size[1]
 
 <ManageTasks>:
-	tasksLayout: tasks
+	tasksList: tasks
+	datetimeDueLabel: datetimeDue
 
-	canvas.before:
-		Color:
-			rgba: 1, 1, 1, 1
-		Rectangle:
-			size: self.size
-	AppLabel:
-		text: 'Tasks'
-		pos_hint: {'y': .45}
-	BoxLayout:
-		canvas:
-			Line:
-				rectangle: 0, 0, 200, 200
+	# Tasks are displayed in this screen
+	Screen:
+		id: displayTasks
+		name: 'manage_tasks'
+
+		canvas.before:
 			Color:
-				rgb: 1, 0, 0
-
-		orientation: 'vertical'
-
-		AnchorLayout:
-			anchor_x: 'right'
-			anchor_y: 'top'
-			size_hint: 1, .1
-			padding: 0, 10, 10, 0
-
-			BtnBehaviorLabel:
-				text: 'New Task'
-				size: self.texture_size
-				size_hint: None, None
-				on_release: root.manager.current = 'create_task'
-		ScrollView:
-			do_scroll_y: True
-			do_scroll_x: False
-
-			BoxLayout:
-				id: tasks
-				orientation: 'vertical'
-				size_hint_y: None
-				#height: root.height
-
-<CreateTask>:
-	timestampDue: timestampDue
-
-	canvas.before:
-		Color:
-			rgba: 1, 1, 1, 1
-		Rectangle:
-			size: self.size
-	AppLabel:
-		text: 'Create Task'
-		pos_hint: {'y': .45}
-	BoxLayout:
-		orientation: 'vertical'
-
-		AnchorLayout:
-			anchor_x: 'left'
-			anchor_y: 'top'
-			padding: 10, 10, 0, 0
-			size_hint: 1, .05
-
-			BtnBehaviorLabel:
-				size: self.texture_size
-				size_hint: None, None
-				text: 'Cancel'
-				on_release: root.manager.current = 'manage_tasks'
+				rgba: 1, 1, 1, 1
+			Rectangle:
+				size: self.size
+		AppLabel:
+			text: 'Tasks'
+			pos_hint: {'y': .45}
 		BoxLayout:
-			orientation: 'horizontal'
-			padding: 10, 0, 10, 0
-			size_hint_y: .5
+			orientation: 'vertical'
 
+			canvas:
+				Line:
+					rectangle: 0, 0, 200, 200
+				Color:
+					rgb: 1, 0, 0
+
+			AnchorLayout:
+				anchor_x: 'right'
+				anchor_y: 'top'
+				size_hint: 1, .1
+				padding: 0, 10, 10, 0
+
+				BtnBehaviorLabel:
+					text: 'New Task'
+					size: self.texture_size
+					size_hint: None, None
+					on_release: displayTasks.manager.current = 'create_task'
+			ScrollView:
+				do_scroll_y: True
+				do_scroll_x: False
+
+				BoxLayout:
+					id: tasks
+					orientation: 'vertical'
+					size_hint_y: None
+
+	# Create task GUI is displayed in this screen
+	Screen:
+		id: createTask
+		name: 'create_task'
+		datetimeDue: datetimeDue
+
+		canvas.before:
+			Color:
+				rgba: 1, 1, 1, 1
+			Rectangle:
+				size: self.size
+		AppLabel:
+			text: 'Create Task'
+			pos_hint: {'y': .45}
+		BoxLayout:
+			orientation: 'vertical'
+
+			AnchorLayout:
+				anchor_x: 'left'
+				anchor_y: 'top'
+				padding: 10, 10, 0, 0
+				size_hint: 1, .05
+
+				BtnBehaviorLabel:
+					size: self.texture_size
+					size_hint: None, None
+					text: 'Cancel'
+					on_release: createTask.manager.current = 'manage_tasks'
 			BoxLayout:
-				orientation: 'vertical'
-				spacing: 10
+				orientation: 'horizontal'
+				padding: 10, 0, 10, 0
+				size_hint_y: .5
 
 				BoxLayout:
 					orientation: 'vertical'
-					size_hint_y: .25
+					spacing: 10
 
-					AppLabel:
-						text: 'Title'
-						size: self.texture_size
-						size_hint: None, None
-					TextInput:
-						id: title
-						hint_text: 'Required'
-						multiline: False
-						size_hint_x: .7
-						size_hint_y: None
-						height: 30
-				BoxLayout:
-					orientation: 'vertical'
-					size_hint_y: .4
+					BoxLayout:
+						orientation: 'vertical'
+						size_hint_y: .25
 
-					AppLabel:
-						text: 'Body'
-						size: self.texture_size
-						size_hint: None, None
-					TextInput:
-						id: body
-						hint_text: 'Not Required'
-						size_hint: .8, .3
-				BoxLayout:
-					orientation: 'horizontal'
+						AppLabel:
+							text: 'Title'
+							size: self.texture_size
+							size_hint: None, None
+						TextInput:
+							id: title
+							hint_text: 'Required'
+							multiline: False
+							size_hint_x: .7
+							size_hint_y: None
+							height: 30
+					BoxLayout:
+						orientation: 'vertical'
+						size_hint_y: .4
 
-					GridLayout:
-						rows: 4
-						cols: 2
-						spacing: 3
+						AppLabel:
+							text: 'Body'
+							size: self.texture_size
+							size_hint: None, None
+						TextInput:
+							id: body
+							hint_text: 'Not Required'
+							size_hint: .8, .3
+					BoxLayout:
+						orientation: 'horizontal'
 
-						Button:
-							text: '+5M'
-							on_press: root.addMins(5)
-						Button:
-							text: '+10M'
-							on_press: root.addMins(10)
-						Button:
-							text: '+1H'
-							on_press: root.addHours(1)
-						Button:
-							text: '+1D'
-							on_press: root.addDays(1)
-						Button:
-							text: '+7D'
-							on_press: root.addDays(7)
-						Button:
-							text: 'Custom'
-						Button:
-							font_name: 'fonts/Segoe_UI_Symbol.ttf'
-							font_size: 36
-							text: '↺'
-							on_press: root.clearDueTimestamp()
+						GridLayout:
+							rows: 4
+							cols: 2
+							spacing: 3
+
+							Button:
+								text: '+5M'
+								on_press: root.increaseDueDatetime(minutes=5)
+							Button:
+								text: '+10M'
+								on_press: root.increaseDueDatetime(minutes=10)
+							Button:
+								text: '+1H'
+								on_press: root.increaseDueDatetime(hours=1)
+							Button:
+								text: '+1D'
+								on_press: root.increaseDueDatetime(days=1)
+							Button:
+								text: '+7D'
+								on_press: root.increaseDueDatetime(days=7)
+							Button:
+								text: 'Custom'
+							Button:
+								font_name: 'fonts/Segoe_UI_Symbol.ttf'
+								font_size: 36
+								text: '↺'
+								on_press: root.resetDueDatetime()
+						AnchorLayout:
+							anchor_x: 'center'
+							anchor_y: 'top'
+
+							BoxLayout:
+								orientation: 'vertical'
+								size_hint: .8, .4
+
+								AppLabel:
+									text: 'DD:HH:MM'
+									font_size: datetimeDue.height/2
+								AppLabel:
+									id: datetimeDue
+									text: '00:00:00'
+									font_size: 30
+									readonly: True
 					AnchorLayout:
-						anchor_x: 'center'
-						anchor_y: 'top'
-
-						BoxLayout:
-							orientation: 'vertical'
-							size_hint: .8, .4
-
-							AppLabel:
-								text: 'DD:HH:MM'
-								font_size: timestampDue.height/2
-							AppLabel:
-								id: timestampDue
-								font_size: 30
-								readonly: True
-				AnchorLayout:
-					anchor_y: 'center'
-					size_hint: 1, .4
-			
-					Button:
-						text: 'Done'
-						size_hint: .5, .5
-						on_release: root.addTask(title.text, body.text)
+						anchor_y: 'center'
+						size_hint: 1, .4
+				
+						Button:
+							text: 'Done'
+							size_hint: .5, .5
+							on_release: root.addTask(title.text, body.text)
