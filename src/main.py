@@ -37,9 +37,7 @@ class AppLabel(Label):
     pass
 
 class TaskDisplay(ButtonBehavior, BoxLayout):
-    # edit task options on click
-    def on_release(self):
-        print(self)
+    pass
 
 class ManageTasks(ScreenManager):
     tasksDisplay = ObjectProperty(None)
@@ -79,11 +77,16 @@ class ManageTasks(ScreenManager):
 
     def displayTask(self, taskId: int, title: str, body: str, dueDatetime: datetime=None) -> None:
         taskDisplay = TaskDisplay()
+        taskDisplay.on_release = lambda: self.editTask(taskId)
+
         dispTaskAndDelOpt = BoxLayout(orientation='horizontal')
 
         titleLabel = AppLabel(
-            text=title
+            text=title,
+            text_size=(Window.size[0], None),
+            padding=(Window.size[0]/10, 20)
         )
+
         dispTaskAndDelOpt.add_widget(titleLabel)
 
         deleteTaskIcon = BtnBehaviorLabel(
@@ -98,14 +101,13 @@ class ManageTasks(ScreenManager):
         taskDisplay.add_widget(dispTaskAndDelOpt)
 
         # set the due date if there is an assigned due date
+        dueDateLabel = AppLabel()
         if dueDatetime != None:
             # get the remaining time from today
             remainingTime = self.parseDueDate(dueDatetime)
 
-            dueDateLabel = AppLabel(
-                text=remainingTime
-            )
-            taskDisplay.add_widget(dueDateLabel)
+            dueDateLabel.text = remainingTime
+        taskDisplay.add_widget(dueDateLabel)
 
         self.tasksList.add_widget(taskDisplay)
 
@@ -215,8 +217,6 @@ class ManageTasks(ScreenManager):
             '''
             cursor.execute(query, (title, body))
 
-        # clear the input
-
         # update the tasks display GUI
         taskIdQuery = 'SELECT last_insert_rowid()'
         taskId = (cursor.execute(taskIdQuery)).fetchall()[0][0]
@@ -229,7 +229,11 @@ class ManageTasks(ScreenManager):
 
         # go back to home page
         self.createTask.manager.transition.direction = 'right'
-        self.createTask.current = 'manage_tasks'
+        self.createTask.manager.current = 'manage_tasks'
+
+    # Edit task functionality
+    def editTask(self, taskId: int) -> None:
+        print('edit')
 
     # Delete task functionality
     def deleteTask(self, taskId: int) -> None:
