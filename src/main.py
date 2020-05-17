@@ -55,6 +55,9 @@ class ManageTasks(ScreenManager):
 
     # Display task functionality
     def displayTasks(self) -> None:
+        # clear the previously displayed tasks if they exist to prevent duplicates
+        self.tasksList.clear_widgets()
+
         # load each of the users tasks
         tasks = self.fetchTasks()
 
@@ -238,6 +241,9 @@ class ManageTasks(ScreenManager):
 
         conn.commit()
         conn.close()
+
+        # update the task display GUI
+        self.displayTasks()
 
 class ToDoApp(App):
     def build(self):
