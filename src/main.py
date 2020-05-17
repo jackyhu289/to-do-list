@@ -227,6 +227,10 @@ class ManageTasks(ScreenManager):
         conn.commit()
         conn.close()
 
+        # go back to home page
+        self.createTask.manager.transition.direction = 'right'
+        self.createTask.current = 'manage_tasks'
+
     # Delete task functionality
     def deleteTask(self, taskId: int) -> None:
         # remove the task from the database

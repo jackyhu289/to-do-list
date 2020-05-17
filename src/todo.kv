@@ -188,8 +188,6 @@
 							size_hint: .5, .5
 							on_release:
 								root.addTask(title.text, body.text)
-								createTask.manager.transition.direction = 'right'
-								createTask.manager.current = 'manage_tasks'
 								title.text = ''
 								body.text = ''
 								root.timeLeft = None
