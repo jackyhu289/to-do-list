@@ -68,13 +68,13 @@ class ManageTasks(ScreenManager):
 
             # retrieve the due date if it exists (not NULL)
             if task[3] != None:
-                dueDate = datetime.fromisoformat(task[3])
+                dueDatetime = datetime.fromisoformat(task[3])
                 
-                self.displayTask(taskId, title, body, dueDate)
+                self.displayTask(taskId, title, body, dueDatetime)
             else:
                 self.displayTask(taskId, title, body)
 
-    def displayTask(self, taskId: int, title: str, body: str, dueDate: datetime=None) -> None:
+    def displayTask(self, taskId: int, title: str, body: str, dueDatetime: datetime=None) -> None:
         taskDisplay = TaskDisplay()
         dispTaskAndDelOpt = BoxLayout(orientation='horizontal')
 
@@ -95,9 +95,9 @@ class ManageTasks(ScreenManager):
         taskDisplay.add_widget(dispTaskAndDelOpt)
 
         # set the due date if there is an assigned due date
-        if dueDate != None:
+        if dueDatetime != None:
             # get the remaining time from today
-            remainingTime = self.parseDueDate(dueDate)
+            remainingTime = self.parseDueDate(dueDatetime)
 
             dueDateLabel = AppLabel(
                 text=remainingTime
@@ -121,8 +121,8 @@ class ManageTasks(ScreenManager):
         return tasks
 
     # parses the date, returning it in the form of '7 days/minutes/... left
-    def parseDueDate(self, dueDate) -> str:
-        secondsLeft = (dueDate - datetime.now()).total_seconds()
+    def parseDueDate(self, dueDatetime) -> str:
+        secondsLeft = (dueDatetime - datetime.now()).total_seconds()
 
         # time durations in seconds
         day = 86400
@@ -131,12 +131,12 @@ class ManageTasks(ScreenManager):
 
         # return the time duration count depending on the highest time duration
         if secondsLeft >= day:
-            return '%s days left' % math.floor(secondsLeft / day)
+            return '%s day(s) left' % math.floor(secondsLeft / day)
         if secondsLeft >= hour:
-            return '%s hours left' % math.floor(secondsLeft / hour) 
+            return '%s hour(s) left' % math.floor(secondsLeft / hour) 
         if secondsLeft >= minute:
-            return '%s minutes left' % math.floor(secondsLeft / minute)
-        return '%s seconds left' % math.floor(secondsLeft)
+            return '%s minute(s) left' % math.floor(secondsLeft / minute)
+        return '%s second(s) left' % math.floor(secondsLeft)
 
     # Create task functionality
     # Manage due date
@@ -186,6 +186,7 @@ class ManageTasks(ScreenManager):
         # remove unnecessary trailing and preceding whitespace
         title = title.strip()
         body = body.strip()
+        dueDatetime = None
 
         # store the data into sql database
         conn = sqlite3.connect(DATABASE_NAME)
@@ -210,6 +211,15 @@ class ManageTasks(ScreenManager):
                 VALUES(?, ?)
             '''
             cursor.execute(query, (title, body))
+
+        # clear the input
+
+        # update the tasks display GUI
+        taskIdQuery = 'SELECT last_insert_rowid()'
+        taskId = (cursor.execute(taskIdQuery)).fetchall()[0][0]
+
+        self.tasksList.height = self.tasksList.height + 100
+        self.displayTask(taskId, title, body, dueDatetime)
 
         conn.commit()
         conn.close()

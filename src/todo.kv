@@ -53,7 +53,9 @@
 					text: 'New Task'
 					size: self.texture_size
 					size_hint: None, None
-					on_release: tasksDisplay.manager.current = 'create_task'
+					on_release:
+						tasksDisplay.manager.transition.direction = 'left'
+						tasksDisplay.manager.current = 'create_task'
 			ScrollView:
 				do_scroll_y: True
 				do_scroll_x: False
@@ -90,7 +92,9 @@
 					size: self.texture_size
 					size_hint: None, None
 					text: 'Cancel'
-					on_release: createTask.manager.current = 'manage_tasks'
+					on_release:
+						createTask.manager.transition.direction = 'right'
+						createTask.manager.current = 'manage_tasks'
 			BoxLayout:
 				orientation: 'horizontal'
 				padding: 10, 0, 10, 0
@@ -186,3 +190,7 @@
 								root.addTask(title.text, body.text)
 								createTask.manager.transition.direction = 'right'
 								createTask.manager.current = 'manage_tasks'
+								title.text = ''
+								body.text = ''
+								root.timeLeft = None
+								root.dispDueDate()
