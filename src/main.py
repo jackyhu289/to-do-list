@@ -19,7 +19,6 @@ from kivy.graphics import Line
 from kivy.properties import ObjectProperty
 
 import sqlite3
-import math
 from datetime import datetime
 from datetime import timedelta
 
@@ -37,7 +36,22 @@ class AppLabel(Label):
     pass
 
 class TaskDisplay(ButtonBehavior, BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # colour will change depending on how much time there is left
+        with self.canvas:
+            self.colour = Color(rgb=(1, 1, 1))
+            self.rect = Rectangle(pos=self.pos, size=self.size)
+
+        self.bind(
+            size=self._update_size,
+            pos=self._update_size
+        )
+
+    def _update_size(self, *args):
+        self.rect.pos = self.pos
+        self.rect.size = self.size
 
 class ManageTasks(ScreenManager):
     tasksDisplay = ObjectProperty(None)
@@ -48,6 +62,11 @@ class ManageTasks(ScreenManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.timeLeft = None
+        self.STATUS_RGB_COLOURS = {
+            'red': (230/255, 34/255, 21/255),
+            'yellow': (219/255, 216/255, 37/255),
+            'green': (39/255, 214/255, 41/255)
+        }
         
         self.displayTasks()
 
@@ -103,12 +122,35 @@ class ManageTasks(ScreenManager):
         # set the due date if there is an assigned due date
         dueDateLabel = AppLabel()
         if dueDatetime != None:
-            # get the remaining time from today
-            remainingTime = self.parseDueDate(dueDatetime)
+            # the design of the displayed task depends on how much time there is left
+            # work with seconds because timedelta cannot handle hours, mins, etc
+            secondsLeft = (dueDatetime - datetime.now()).total_seconds()
+            statusColour = None
 
-            dueDateLabel.text = remainingTime
+            DAY = 86400
+            HOUR = 3600
+            MINUTE = 60
+
+            if secondsLeft >= DAY:
+                dueDateLabel.text = '%i day(s) left' % (secondsLeft // DAY)
+            elif secondsLeft >= HOUR:
+                dueDateLabel.text = '%i hour(s) left' % (secondsLeft // HOUR) 
+            elif secondsLeft >= MINUTE:
+                dueDateLabel.text = '%i minute(s) left' % (secondsLeft // MINUTE)
+            elif secondsLeft <= 0:
+                dueDateLabel.text = 'Due date has passed!'
+
+            # set the colour according to time left
+            if secondsLeft >= DAY*7:
+                statusColour = self.STATUS_RGB_COLOURS['green']
+            elif secondsLeft >= HOUR:
+                statusColour = self.STATUS_RGB_COLOURS['yellow']
+            else:
+                statusColour = self.STATUS_RGB_COLOURS['red']
+
+            taskDisplay.colour.rgb = statusColour
+
         taskDisplay.add_widget(dueDateLabel)
-
         self.tasksList.add_widget(taskDisplay)
 
     def fetchTasks(self) -> tuple:
@@ -124,24 +166,6 @@ class ManageTasks(ScreenManager):
         conn.close()
 
         return tasks
-
-    # parses the date, returning it in the form of '7 days/minutes/... left
-    def parseDueDate(self, dueDatetime) -> str:
-        secondsLeft = (dueDatetime - datetime.now()).total_seconds()
-
-        # time durations in seconds
-        day = 86400
-        hour = 3600
-        minute = 60
-
-        # return the time duration count depending on the highest time duration
-        if secondsLeft >= day:
-            return '%s day(s) left' % math.floor(secondsLeft / day)
-        if secondsLeft >= hour:
-            return '%s hour(s) left' % math.floor(secondsLeft / hour) 
-        if secondsLeft >= minute:
-            return '%s minute(s) left' % math.floor(secondsLeft / minute)
-        return '%s second(s) left' % math.floor(secondsLeft)
 
     # Create task functionality
     # Manage due date

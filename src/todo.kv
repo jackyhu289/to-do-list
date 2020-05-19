@@ -9,10 +9,11 @@
 <TaskDisplay>:
 	orientation: 'vertical'
 
-	canvas.before:
+	canvas.after:
 		Color:
-			rgb: 1, 0, 0
+			rgb: 0, 0, 0
 		Line:
+			width: 1.1
 			rectangle: self.pos[0], self.pos[1], self.size[0], self.size[1]
 
 <ManageTasks>:
@@ -68,6 +69,7 @@
 	# Create task GUI is displayed in this screen
 	Screen:
 		id: createTask
+
 		name: 'create_task'
 		datetimeDue: datetimeDue
 
@@ -184,7 +186,7 @@
 						size_hint: 1, .4
 				
 						Button:
-							text: 'Done'
+							text: 'Add'
 							size_hint: .5, .5
 							on_release:
 								root.addTask(title.text, body.text)
